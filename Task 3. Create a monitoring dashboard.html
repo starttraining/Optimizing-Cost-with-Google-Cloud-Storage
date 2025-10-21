@@ -1,0 +1,27 @@
+When the Monitoring Overview page opens, your metrics scope project is ready.
+
+In the left panel, click Dashboards > Create Custom Dashboard.
+
+Name the Dashboard Bucket Usage.
+
+Click +ADD WIDGET.
+
+Click Line.
+
+For Widget Title, type Bucket Access.
+
+For select a metric > GCS Bucket > Api > Request count metric and click Apply.
+
+Note: If you cannot find the Request count metric, uncheck Active.
+Select a metric dashboard
+
+To group the metrics by bucket name, in the Group By drop-down list, select bucket_name and click ok.
+
+Click + Add Filter.
+
+To filter by the method name:
+
+For Filter By Metric Label, select method.
+In the dropdown next to method, select ReadObject.
+Click Apply.
+You’ve configured Cloud Monitoring to observe object access in your buckets. There's no data in the chart because there's no traffic to the Cloud Storage buckets.

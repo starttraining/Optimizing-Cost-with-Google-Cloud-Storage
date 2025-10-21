@@ -1,0 +1,48 @@
+In Cloud Shell, enter the following command to view the Cloud Run function code that migrates a storage bucket to the Nearline storage class:
+cat $WORKDIR/migrate-storage/main.py | grep "migrate_storage(" -A 15
+ 
+The output is:
+
+def migrate_storage(request):
+    request_json = request.get_json(force=True)
+    bucket_name = request_json['incident']['resource_name']
+
+    print(f"bucket_name: {bucket_name}")  # Print the bucket name
+
+    if not bucket_name:
+        print("Error: bucket_name is empty")
+        return "Invalid bucket name", 400
+
+    storage_client = storage.Client(project)
+    bucket = storage_client.get_bucket(bucket_name)
+    bucket.storage_class = "NEARLINE"
+    bucket.patch()
+    return "Bucket migrated successfully", 200
+Notice that the Cloud Run function uses the bucket name passed in the request to change it's storage class to Nearline.
+
+Update the Python script to use your Project ID:
+sed -i "s/<project-id>/$PROJECT_ID/" $WORKDIR/migrate-storage/main.py
+ 
+Disable the Cloud Run functions API:
+gcloud services disable cloudfunctions.googleapis.com
+ 
+Re-enable the Cloud Run functions API:
+gcloud services enable cloudfunctions.googleapis.com
+ 
+Export the project number:
+export PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
+ 
+Add the artifactregistry.reader permission for your developer service account:
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+--member="serviceAccount:$PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+--role="roles/artifactregistry.reader"
+ 
+Deploy the Cloud Run function:
+gcloud functions deploy migrate_storage --gen2 --trigger-http --runtime=python39 --region Region
+ 
+When prompted, enter Y to enable the API [run.googleapis.com] for the project and retry. Do the same for allowing unauthenticated invocations.
+
+Note: If you see a permissions error, please wait a few minutes, and try the deployment again.
+Capture the trigger URL into an environment variable that you use in the next section:
+export FUNCTION_URL=$(gcloud functions describe migrate_storage --format=json --region Region | jq -r '.url')
+ 

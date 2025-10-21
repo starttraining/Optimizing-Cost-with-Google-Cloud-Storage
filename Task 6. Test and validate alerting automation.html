@@ -1,0 +1,18 @@
+Update the JSON file with the bucket name:
+export IDLE_BUCKET_NAME=$PROJECT_ID-idle-bucket
+sed -i "s/\\\$IDLE_BUCKET_NAME/$IDLE_BUCKET_NAME/" $WORKDIR/migrate-storage/incident.json
+ 
+Send a test notification to the Cloud Run function you deployed using the incident.json file:
+envsubst < $WORKDIR/migrate-storage/incident.json | curl -X POST -H "Content-Type: application/json" $FUNCTION_URL -d @-
+ 
+The output is:
+
+Bucket migrated successfully
+The output isn’t terminated with a newline and therefore is immediately followed by the command prompt.
+
+Confirm that the idle bucket was migrated to Nearline:
+gsutil defstorageclass get gs://$PROJECT_ID-idle-bucket
+ 
+The output is:
+
+gs://<project-id>-idle-bucket: NEARLINE

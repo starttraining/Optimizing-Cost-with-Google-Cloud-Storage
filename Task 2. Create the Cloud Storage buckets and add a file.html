@@ -1,0 +1,22 @@
+In Cloud Shell, navigate to the migrate-storage directory:
+cd $WORKDIR/migrate-storage
+
+Create serving-bucket, the Cloud Storage bucket. You use this later to change storage classes:
+export PROJECT_ID=$(gcloud config list --format 'value(core.project)' 2>/dev/null)
+gcloud storage buckets create  gs://${PROJECT_ID}-serving-bucket -l REGION
+
+Make the bucket public:
+gsutil acl ch -u allUsers:R gs://${PROJECT_ID}-serving-bucket
+
+Add a text file to the bucket:
+gcloud storage cp $WORKDIR/migrate-storage/testfile.txt  gs://${PROJECT_ID}-serving-bucket
+
+Make the file public:
+gsutil acl ch -u allUsers:R gs://${PROJECT_ID}-serving-bucket/testfile.txt
+
+Confirm that you’re able to access the file:
+curl http://storage.googleapis.com/${PROJECT_ID}-serving-bucket/testfile.txt
+
+Create a second bucket called idle-bucket that won’t serve any data:
+gcloud storage buckets create gs://${PROJECT_ID}-idle-bucket -l REGION
+export IDLE_BUCKET_NAME=$PROJECT_ID-idle-bucket
